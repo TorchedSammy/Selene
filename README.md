@@ -12,7 +12,7 @@ This requires [Hilbish](https://github.com/Rosettea/Hilbish).
 
 # Installation
 ```
-git clone https://github.com/TorchedSammy/Selene
+git clone https://github.com/TorchedSammy/Selene --recursive
 cd Selene
 hilbish selene.lua
 npm i
