@@ -1,0 +1,3 @@
+[submodule "fengari"]
+	path = fengari
+	url = https://github.com/fengari-lua/fengari
