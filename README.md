@@ -21,3 +21,6 @@ mv node_modules fengari css.lua ~/.config/selene
 
 # License
 MIT
+
+This would (probably) not exist without [discocss](https://github.com/mlvzk/discocss),
+which Selene is based on, so credit to them.
