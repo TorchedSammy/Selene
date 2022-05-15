@@ -1,5 +1,34 @@
 -- stolen
 
+-- returns a bool saying whether a selector
+-- is known or not (single colon, things like hover or focus)
+local function knownSingleSelector(selector)
+   -- there's more but i'll only add if someone wants to use them
+   local selectors = {
+      'active',
+      'checked',
+      'default',
+      'disabled',
+      'empty',
+      'enabled',
+      'focus',
+      'fullscreen',
+      'hover',
+      'invalid',
+      'link',
+      'optional',
+      'root',
+      'target',
+      'valid',
+      'visited',
+   }
+   for _, sel in ipairs(selectors) do
+      if sel == selector then return true end
+   end
+
+   return false
+end
+
 local function side_str (side)
    if side then return '-'..side else return '' end
 end
@@ -11,12 +40,17 @@ local function size_str (size)
    elseif type(size) == 'string' then
       return size
    else
-      error("size must be number or string")
+      error 'size must be number or string'
    end
 end
 
 -- has a table only got keys with names of sides?
-local sides = {left=true,right=true,bottom=true,top=true}
+local sides = {
+   left = true,
+   right = true,
+   bottom = true,
+   top = true
+}
 
 function has_sides (t)
    local ok = false
@@ -88,14 +122,17 @@ function css_body (self,spec)
       end
    end
    for prop, val in pairs(processed) do
-      prop = prop:gsub('_','-')
-      self:write('\t'..prop..': '..val..';\n')
+      if type(prop) == 'string' then
+         prop = prop:gsub('_','-')
+         if type(val) == 'table' or type(val) == 'function' then val = '' end
+         self:write('\t'..prop..': '..val..';\n')
+      end
    end
    self:write '}\n'
 end
 
 
-function css_ (self,selector)
+function css_ (self,selector, select2)
    if type(selector) == 'string' then
       self:write(selector..' ')
       return function(spec)
@@ -103,23 +140,47 @@ function css_ (self,selector)
       end
    else
       local spec = selector
-      local ss, append = {}, table.insert
-      for i,s in ipairs(self.ss) do
-         if s == 'id' then
-            append(ss,'#')
-         elseif s == 'class' then
-            append(ss,'.')
-         else
-            append(ss,s)
-            if self.ss[i+1] ~= 'class' then
-               append(ss,' ')
+      if spec ~= css then
+         local ss, append = {}, table.insert
+         for i,s in ipairs(self.ss) do
+            if s == 'id' then
+               append(ss,'#')
+            elseif s == 'class' then
+               append(ss,'.')
+            else
+               append(ss,s)
+               if self.ss[i+1] ~= 'class' then
+                  append(ss,' ')
+               end
             end
          end
+         selector = table.concat(ss)
+         self.ss = {}
+         self:write(selector)
+         css_body(self,spec)
+      else
+         spec = select2
+         local ss, append = {}, table.insert
+         for i,s in ipairs(self.ss) do
+            if s == 'id' then
+               append(ss,'#')
+            elseif s == 'class' then
+               append(ss,'.')
+            elseif knownSingleSelector(s) then
+               local sel = s:gsub('_', '-')
+               append(ss, ':' .. sel)
+            else
+               append(ss,s)
+               if self.ss[i+1] ~= 'hover' then
+                  append(ss,' ')
+               end
+            end
+         end
+         selector = table.concat(ss)
+         self.ss = {}
+         self:write(selector..' ')
+         css_body(self, spec)
       end
-      selector = table.concat(ss)
-      self.ss = {}
-      self:write(selector..' ')
-      css_body(self,spec)
    end
 end
 
