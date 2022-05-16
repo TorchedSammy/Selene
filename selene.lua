@@ -20,8 +20,9 @@ module.exports = () => {
 	const L = lauxlib.luaL_newstate();
 
 	lualib.luaL_openlibs(L);
+	lauxlib.luaL_dofile(L, `${confDir}/css.lua`);
 	function loadLua() {
-		lauxlib.luaL_dofile(L, `${confDir}/css.lua`);
+		lauxlib.luaL_dostring(L, 'css.clear()')
 		lauxlib.luaL_dofile(L, `${confDir}/init.lua`);
 	}
 
